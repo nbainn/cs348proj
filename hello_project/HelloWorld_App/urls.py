@@ -16,7 +16,12 @@ Including another URLconf
 """
 from django.urls import path,include
 from .views import sayHello
-
+from . import views
 urlpatterns = [
-    path('', sayHello, name='sayHello'),
+    #path('', sayHello, name='sayHello'),
+    path('list/', views.list_library),
+    path('insert_book/', views.insert_book_item, name='insert_book_item'),
+    path('delete_book/<int:book_id>/', views.delete_book_item, name='delete_book_item'),
+    path('update_book/<int:book_id>/', views.update_book_status, name='update_book_status'),
+    path('filter_books_by_status/', views.filter_books_by_status, name='filter_books_by_status'),
 ]
