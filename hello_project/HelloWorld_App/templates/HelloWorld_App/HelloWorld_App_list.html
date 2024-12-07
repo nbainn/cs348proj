@@ -89,6 +89,22 @@
                                 <option value="3" {% if book.status == 3 %}selected{% endif %}>Read</option>
                             </select>
                         </form>
+                        <h1>Filter Books by Date</h1>
+                        <form action="{% url 'filter_books_by_date' %}" method="post" class="float-right d-inline">
+                            {% csrf_token %}
+                            <!-- Start Date -->
+                            <label for="start_date">Start Date:</label>
+                            <input type="date" id="start_date" name="start_date" required>
+                            <br><br>
+
+                            <!-- End Date -->
+                            <label for="end_date">End Date:</label>
+                            <input type="date" id="end_date" name="end_date" required>
+                            <br><br>
+
+                            <!-- Submit Button -->
+                            <button type="submit" class="btn btn-primary">Filter</button>
+                        </form>
                         {{ status_total|default:0 }} total books
                     </div>
                     <div class="card-body">

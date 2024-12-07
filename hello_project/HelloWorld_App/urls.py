@@ -24,4 +24,5 @@ urlpatterns = [
     path('delete_book/<int:book_id>/', views.delete_book_item, name='delete_book_item'),
     path('update_book/<int:book_id>/', views.update_book_status, name='update_book_status'),
     path('filter_books_by_status/', views.filter_books_by_status, name='filter_books_by_status'),
+    path('filter_books_by_date/', views.filter_books_by_date, name='filter_books_by_date'),
 ]

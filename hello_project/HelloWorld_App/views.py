@@ -56,3 +56,50 @@ def filter_books_by_status(request):
         text_status = "Read"
     context = {'book_list': get_book_list(), 'books': books, 'text_status': text_status, 'status_total': status_total}
     return render(request, 'HelloWorld_App/HelloWorld_App_list.html', context)
+def filter_books_by_date(request):
+    start_date = request.POST.get('start_date')
+    end_date = request.POST.get('end_date')
+    if not start_date or not end_date:
+        context = {'book_list': get_book_list()}
+        return render(request, 'HelloWorld_App/HelloWorld_App_list.html', context)
+    with connection.cursor() as cursor:
+        # Use a parameterized query to prevent SQL injection (prepared statement)
+        print(start_date, end_date)
+        cursor.execute("SELECT * FROM \"HelloWorld_App_library\" WHERE date_added >= %s AND date_added <= %s", [start_date, end_date])
+        # Fetch all results
+        rows = cursor.fetchall()
+    status_total = len(rows)
+    context = {'book_list': get_book_list(), 'books': rows, 'status_total': status_total}
+    return render(request, 'HelloWorld_App/HelloWorld_App_list.html', context)
+def filter_books(request):
+    new_status = request.POST.get('status')
+    start_date = request.POST.get('start_date')
+    end_date = request.POST.get('end_date')
+
+    query = "SELECT * FROM \"HelloWorld_App_library\" WHERE 1=1"
+    query_params = []
+    if new_status and new_status != 0:
+        query += " AND status = %s"
+        query_params.append(new_status)
+    if start_date and end_date:
+        query += " AND date_added >= %s AND date_added <= %s"
+        query_params.extend([start_date, end_date])
+    with connection.cursor() as cursor:
+        # Use a parameterized query to prevent SQL injection (prepared statement)
+        print(new_status, start_date, end_date)
+        cursor.execute(query, query_params)
+        # Fetch all results
+        rows = cursor.fetchall()
+    status_total = len(rows)
+    books = [
+        {'id': row[0], 'content': row[1], 'status': row[2], 'date_added': row[3]} for row in rows
+    ]
+    text_status = ""
+    if new_status == '1':
+        text_status = "To Be Read"
+    elif new_status == '2':
+        text_status = "Current"
+    elif new_status == '3':
+        text_status = "Read"
+    context = {'book_list': get_book_list(), 'books': books, 'text_status': text_status or "All Statuses", 'status_total': status_total}
+    return render(request, 'HelloWorld_App/HelloWorld_App_list.html', context)
