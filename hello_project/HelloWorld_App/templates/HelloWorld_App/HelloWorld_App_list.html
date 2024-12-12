@@ -83,7 +83,7 @@
                 </div>
                 <div class="card">
                     <div class="card-header shadow-sm bg-white">
-                        <h1 class="display-5 text-info"><i class="fas fa-paper"></i>Generate report for: {{ text_status|default:"N/A" }}</h1>
+                        <h1 class="display-5 text-info"><i class="fas fa-paper"></i>Generate report for:</h1>
                         <form action="{% url 'filter_books' %}" method="post" class="float-right d-inline">
                             {% csrf_token %}
                             <!-- status filter-->
@@ -127,6 +127,10 @@
                             <button type="submit" class="btn btn-primary">Filter</button>
                         </form>
                         {{ status_total|default:0 }} total books
+                        <br>
+                        Predominant status: {{ predom_status }} 
+                        <br>
+                        Predominant genre: {{ predominant_genre }}
                     </div>
                     <div class="card-body">
                         <ul class="list-group">
@@ -135,7 +139,15 @@
                             <strong>{{ book1.content }}</strong>,
                             {{ book1.author }},
                             {{ book1.genre }}
-                            <span class="badge badge-primary">{{ text_status }}</span>
+                            {% if book1.status == 1 %}
+                            <span class="badge badge-primary">To Be Read</span>
+                        {% elif book1.status == 2 %}
+                            <span class="badge badge-primary">Current</span>
+                        {% elif book1.status == 3 %}
+                            <span class="badge badge-primary">Read</span>
+                        {% else %}
+                            <span class="badge badge-primary">Unknown</span>
+                        {% endif %}
                             <small class="text-muted">Added: {{ book1.date_added }}</small>
                         </li>
                         {% empty %}

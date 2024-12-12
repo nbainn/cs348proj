@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.db import connection
+from collections import Counter
 from .models import Library
 # Create your views here.
 def sayHello(request):
@@ -129,6 +130,42 @@ def filter_books(request):
     books = [
         {'id': row[0], 'content': row[1], 'status': row[2], 'date_added': row[3], 'author': row[4], 'genre': row[5]} for row in rows
     ]
+    '''
+    status_counts = Counter(row[2] for row in rows)  # Count book statuses
+    if status_counts:
+        predominant_status, count = status_counts.most_common(1)[0]
+        proportion = count / status_total
+    else:
+        predominant_status = "None"
+        proportion = 0
+
+    genre_counts = Counter(row[5] for row in rows if row[5])  # Count non-empty genres
+
+    if genre_counts:
+        predominant_genre, count = genre_counts.most_common(1)[0]
+        proportion = count / (status_total - len([row for row in rows if not row[5]]))  # Exclude books with no genre
+    else:
+        predominant_genre = "None"
+        proportion = 0
+    '''
+
+    status_counts = Counter(row[2] for row in rows)
+    most_common_status, most_common_count = status_counts.most_common(1)[0]
+
+    # Check for ties
+    if any(count == most_common_count for status, count in status_counts.items() if status != most_common_status):
+        predominant_status = "None"
+    else:
+        predominant_status = most_common_status
+
+    genre_counts = Counter(row[5] for row in rows if row[5])
+    most_common_genre, most_common_count = genre_counts.most_common(1)[0]
+
+    # Check for ties in genres
+    if any(count == most_common_count for genre, count in genre_counts.items() if genre != most_common_genre):
+        predominant_genre = "None"
+    else:
+        predominant_genre = most_common_genre
     text_status = ""
     if new_status == '1':
         text_status = "To Be Read"
@@ -136,5 +173,17 @@ def filter_books(request):
         text_status = "Current"
     elif new_status == '3':
         text_status = "Read"
-    context = {'book_list': get_book_list(), 'books': books, 'text_status': text_status or "All Statuses", 'status_total': status_total}
+
+    predom_status = ""
+    print(predominant_status)
+    if predominant_status == 1:
+        predom_status = "To Be Read"
+    elif predominant_status == 2:
+        predom_status = "Current"
+    elif predominant_status == 3:
+        predom_status = "Read"
+    elif predominant_status == "None":
+        predom_status = "None"
+    context = {'book_list': get_book_list(), 'books': books, 'text_status': text_status or "All Statuses", 'status_total': status_total, 'predom_status': predom_status,
+            'predominant_genre': predominant_genre,}
     return render(request, 'HelloWorld_App/HelloWorld_App_list.html', context)
