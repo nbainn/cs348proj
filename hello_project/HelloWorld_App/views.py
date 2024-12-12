@@ -37,8 +37,6 @@ def update_book_status(request, book_id):
     #print(new_status, new_rating)
     if new_status:
         book_to_update.status = int(new_status)
-    if new_status =='3':
-        book_to_update.status = None
     #if new_rating:
     #    book_to_update.rating = float(new_rating)
     book_to_update.save()
