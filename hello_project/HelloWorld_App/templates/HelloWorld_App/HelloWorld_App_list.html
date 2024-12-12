@@ -32,6 +32,8 @@
                                 {% csrf_token %}
                                 <div class="input group">
                                     <input type="text" class="form-control" name="content" placeholder="Add a book">
+                                    <input type="text" class="form-control" name="author" placeholder="Author">
+                                    <input type="text" class="form-control" name="genre" placeholder="Genre">
                                     <select name="status" class="form-control ml-2" name="status">
                                         <option value="1">To Be Read</option>
                                         <option value="2">Current</option>
@@ -50,7 +52,9 @@
                         </li>
                         {% for book in book_list %}
                         <li class="list-group-item">
-                            <strong>{{ book.content }}</strong>
+                            <strong>{{ book.content }}</strong>,
+                            {{ book.author }},
+                            {{ book.genre }}
                             <span class="badge badge-primary">{{ book.get_status_display }}</span>
                             <small class="text-muted">Added: {{ book.date_added }}</small>
                             <form action="{% url 'update_book_status' book.id %}" method="post" class="float-right d-inline">
@@ -80,28 +84,45 @@
                 <div class="card">
                     <div class="card-header shadow-sm bg-white">
                         <h1 class="display-5 text-info"><i class="fas fa-paper"></i>Generate report for: {{ text_status|default:"N/A" }}</h1>
-                        <form action="{% url 'filter_books_by_status' %}" method="post" class="float-right d-inline">
+                        <form action="{% url 'filter_books' %}" method="post" class="float-right d-inline">
                             {% csrf_token %}
-                            <select name="status" class="form-control ml-2" onchange="this.form.submit()">
+                            <!-- status filter-->
+                            <label for="status">Filter by Status:</label>
+                            <select name="status" class="form-control ml-2">
                                 <option value="0" {% if book.status == 0 %}selected{% endif %}>*status*</option>
                                 <option value="1" {% if book.status == 1 %}selected{% endif %}>To Be Read</option>
                                 <option value="2" {% if book.status == 2 %}selected{% endif %}>Current</option>
                                 <option value="3" {% if book.status == 3 %}selected{% endif %}>Read</option>
                             </select>
-                        </form>
-                        <h1>Filter Books by Date</h1>
-                        <form action="{% url 'filter_books_by_date' %}" method="post" class="float-right d-inline">
-                            {% csrf_token %}
+                        <br>
+                        
+                        <!--<form action="{% url 'filter_books_by_date' %}" method="post" class="float-right d-inline"> 
+                            {% csrf_token %} -->
                             <!-- Start Date -->
                             <label for="start_date">Start Date:</label>
-                            <input type="date" id="start_date" name="start_date" required>
+                            <input type="date" id="start_date" name="start_date" value="{{ request.POST.start_date|default:'' }}" required>
                             <br><br>
 
                             <!-- End Date -->
                             <label for="end_date">End Date:</label>
-                            <input type="date" id="end_date" name="end_date" required>
+                            <input type="date" id="end_date" name="end_date" value="{{ request.POST.end_date|default:'' }}" required>
                             <br><br>
 
+                            <label for="for_all_time">
+                                <input type="checkbox" id="for_all_time" name="for_all_time" onchange="toggleDateFields(this)">
+                                For all time
+                            </label>
+                            <br>
+
+                            <label for="book_genre">Filter by Book Genre:</label>
+                            <input type="text" id="book_genre" name="book_genre" class="form-control" value="{{ applied_book_genre|default:'' }}" placeholder="Enter book genre">
+                            <br>
+                            <label for="book_title">Filter by Book Title:</label>
+                            <input type="text" id="book_title" name="book_title" class="form-control" value="{{ applied_book_title|default:'' }}" placeholder="Enter book title">
+                            <br>
+                            <label for="book_author">Filter by Book Author:</label>
+                            <input type="text" id="book_author" name="book_author" class="form-control" value="{{ applied_book_author|default:'' }}" placeholder="Enter book author">
+                            <br>
                             <!-- Submit Button -->
                             <button type="submit" class="btn btn-primary">Filter</button>
                         </form>
@@ -111,7 +132,9 @@
                         <ul class="list-group">
                         {% for book1 in books %}
                         <li class="list-group-item">
-                            <strong>{{ book1.content }}</strong>
+                            <strong>{{ book1.content }}</strong>,
+                            {{ book1.author }},
+                            {{ book1.genre }}
                             <span class="badge badge-primary">{{ text_status }}</span>
                             <small class="text-muted">Added: {{ book1.date_added }}</small>
                         </li>
@@ -126,7 +149,20 @@
             </div>
         </div>
     </div>
-
+    <script>
+        function toggleDateFields(checkbox) {
+            const startDate = document.getElementById('start_date');
+            const endDate = document.getElementById('end_date');
+            
+            if (checkbox.checked) {
+                startDate.disabled = true;
+                endDate.disabled = true;
+            } else {
+                startDate.disabled = false;
+                endDate.disabled = false;
+            }
+        }
+    </script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
         crossorigin="anonymous"></script>

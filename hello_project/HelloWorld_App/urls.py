@@ -25,4 +25,6 @@ urlpatterns = [
     path('update_book/<int:book_id>/', views.update_book_status, name='update_book_status'),
     path('filter_books_by_status/', views.filter_books_by_status, name='filter_books_by_status'),
     path('filter_books_by_date/', views.filter_books_by_date, name='filter_books_by_date'),
+    path('filter_books/', views.filter_books, name='filter_books'),
+    #path('rate_book/', views.rate_book, name='rate_book'),
 ]

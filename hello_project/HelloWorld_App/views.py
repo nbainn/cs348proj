@@ -12,7 +12,13 @@ def get_book_list():
     return Library.objects.all().order_by("-date_added")
 def insert_book_item(request):
     #instance of library model class
-    library = Library(content = request.POST['content'], status = request.POST.get('status', 1))
+    library = Library(content = request.POST['content'],
+                      author = request.POST['author'],
+                      genre = request.POST['genre'],
+                      status = request.POST.get('status', 1),
+                      rating = request.POST.get(None),
+                      review_id = request.POST.get(None)
+                    )
     #django orm to add entries to db without sql
     library.save()
     return redirect("/list/") #maybe take out first dir
@@ -26,10 +32,25 @@ def update_book_status(request, book_id):
     book_to_update = Library.objects.get(id= book_id)
     # Check for POST request to update status
     new_status = request.POST.get('status')
-    print(new_status)
-    book_to_update.status = int(new_status)
+    #new_rating = request.POST.get('rating')
+    #print(new_status, new_rating)
+    if new_status:
+        book_to_update.status = int(new_status)
+    if new_status =='3':
+        book_to_update.status = None
+    #if new_rating:
+    #    book_to_update.rating = float(new_rating)
     book_to_update.save()
     return redirect("/list/")  # Redirect to the library list view after updating
+'''
+def rate_book(request, book_id):
+    book_to_rate = Library.objects.get(id=book_id)
+    new_rating = request.POST.get('rating')
+    if new_rating:
+        book_to_rate.rating = float(new_rating)
+        book_to_rate.save()
+    return redirect("/list/")
+'''
 def filter_books_by_status(request):
     new_status = request.POST.get('status')
     if new_status == 0:
@@ -75,24 +96,38 @@ def filter_books(request):
     new_status = request.POST.get('status')
     start_date = request.POST.get('start_date')
     end_date = request.POST.get('end_date')
+    for_all_time = request.POST.get('for_all_time')
+    book_genre = request.POST.get('book_genre')
+    book_title = request.POST.get('book_title')
+    book_author = request.POST.get('book_author')
 
     query = "SELECT * FROM \"HelloWorld_App_library\" WHERE 1=1"
     query_params = []
-    if new_status and new_status != 0:
+    if new_status and new_status != '0':
         query += " AND status = %s"
         query_params.append(new_status)
-    if start_date and end_date:
+    if not for_all_time and start_date and end_date:
         query += " AND date_added >= %s AND date_added <= %s"
         query_params.extend([start_date, end_date])
+    if book_genre:
+        query += " AND genre ILIKE %s"  # Use ILIKE for case-insensitive search
+        query_params.append(f"%{book_genre}%")  # Allow partial matching
+    if book_title:
+        query += " AND content ILIKE %s"  # Use ILIKE for case-insensitive search
+        query_params.append(f"%{book_title}%")  # Allow partial matching
+    if book_author:
+        query += " AND author ILIKE %s"  # Use ILIKE for case-insensitive search
+        query_params.append(f"%{book_author}%")  # Allow partial matching
     with connection.cursor() as cursor:
         # Use a parameterized query to prevent SQL injection (prepared statement)
-        print(new_status, start_date, end_date)
+        print(new_status, start_date, end_date, book_title, book_genre, book_author)
+        print(query, query_params)
         cursor.execute(query, query_params)
         # Fetch all results
         rows = cursor.fetchall()
     status_total = len(rows)
     books = [
-        {'id': row[0], 'content': row[1], 'status': row[2], 'date_added': row[3]} for row in rows
+        {'id': row[0], 'content': row[1], 'status': row[2], 'date_added': row[3], 'author': row[4], 'genre': row[5]} for row in rows
     ]
     text_status = ""
     if new_status == '1':
